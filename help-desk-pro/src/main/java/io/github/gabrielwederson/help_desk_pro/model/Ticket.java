@@ -6,6 +6,7 @@ import io.github.gabrielwederson.help_desk_pro.model.enums.Type;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -24,16 +25,25 @@ public class Ticket implements Serializable {
     private String description;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Type type;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Priority priority;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Status status;
 
     @Column(name = "user_id")
     private Long userId;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
 
     public Ticket() {
     }
@@ -94,15 +104,31 @@ public class Ticket implements Serializable {
         this.userId = userId;
     }
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(LocalDateTime completedAt) {
+        this.completedAt = completedAt;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Ticket ticket = (Ticket) o;
-        return Objects.equals(id, ticket.id) && Objects.equals(name, ticket.name) && Objects.equals(description, ticket.description) && type == ticket.type && priority == ticket.priority && status == ticket.status && Objects.equals(userId, ticket.userId);
+        return Objects.equals(id, ticket.id) && Objects.equals(name, ticket.name) && Objects.equals(description, ticket.description) && type == ticket.type && priority == ticket.priority && status == ticket.status && Objects.equals(userId, ticket.userId) && Objects.equals(createdAt, ticket.createdAt) && Objects.equals(completedAt, ticket.completedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, type, priority, status, userId);
+        return Objects.hash(id, name, description, type, priority, status, userId, createdAt, completedAt);
     }
 }
