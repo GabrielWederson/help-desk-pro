@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: help-desk-pro
+  datasource:
+    url: ${DB_URL}
+    password: ${POSTGRES_PASS}
+    username: ${POSTGRES_USER}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  rabbitmq:
+    port: 5672
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASS}
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 5
+        concurrency: 3
+        max-concurrency: 10
+rabbit:
+  ticketcriado:
+    exchange: ticket-criado.ex
+  ticketfeito:
+    exchange: ticket-feito.ex
