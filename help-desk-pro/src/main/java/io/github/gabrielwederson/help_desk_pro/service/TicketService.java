@@ -29,4 +29,13 @@ public class TicketService {
 
         return response;
     }
+
+    public void delete(Long id){
+        Ticket entity = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException() ); //change this exception after
+
+        repository.delete(entity);
+    }
+
+
 }
