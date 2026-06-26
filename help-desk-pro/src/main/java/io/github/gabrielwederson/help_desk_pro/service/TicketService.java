@@ -37,5 +37,11 @@ public class TicketService {
         repository.delete(entity);
     }
 
+    public TicketResponseDTO findById(Long id){
+        var entity = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException()); //change this exception after
 
+        return parseObjectMapper(entity, TicketResponseDTO.class);
+
+    }
 }
