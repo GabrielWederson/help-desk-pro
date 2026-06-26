@@ -44,4 +44,19 @@ public class TicketService {
         return parseObjectMapper(entity, TicketResponseDTO.class);
 
     }
+
+    public TicketResponseDTO updateTicket (TicketRequestDTO dto){
+        Ticket entity = repository.findById(dto.getId())
+                .orElseThrow(() -> new IllegalArgumentException()); //change this exception after
+
+        entity.setDescription(dto.getDescription());
+        entity.setName(dto.getName());
+        entity.setPriority(dto.getPriority());
+        entity.setType(dto.getType());
+        entity.setStatus(dto.getStatus());
+
+        repository.save(entity);
+
+        return parseObjectMapper(entity, TicketResponseDTO.class);
+    }
 }

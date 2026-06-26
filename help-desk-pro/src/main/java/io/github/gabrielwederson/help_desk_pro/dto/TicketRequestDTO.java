@@ -9,6 +9,8 @@ import java.util.Objects;
 
 public class TicketRequestDTO {
 
+    private Long id;
+
     private String name;
 
     private String description;
@@ -20,6 +22,14 @@ public class TicketRequestDTO {
     private Status status;
 
     public TicketRequestDTO() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -66,11 +76,11 @@ public class TicketRequestDTO {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         TicketRequestDTO that = (TicketRequestDTO) o;
-        return Objects.equals(name, that.name) && Objects.equals(description, that.description) && type == that.type && priority == that.priority && status == that.status;
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(description, that.description) && type == that.type && priority == that.priority && status == that.status;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, type, priority, status);
+        return Objects.hash(id, name, description, type, priority, status);
     }
 }
