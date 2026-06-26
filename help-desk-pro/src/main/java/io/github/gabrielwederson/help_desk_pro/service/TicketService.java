@@ -5,6 +5,8 @@ import io.github.gabrielwederson.help_desk_pro.dto.TicketResponseDTO;
 import io.github.gabrielwederson.help_desk_pro.model.Ticket;
 import io.github.gabrielwederson.help_desk_pro.repository.TicketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,6 +19,7 @@ public class TicketService {
 
     @Autowired
     private TicketRepository repository;
+
 
     public TicketResponseDTO create(TicketRequestDTO dto){
 
@@ -59,4 +62,11 @@ public class TicketService {
 
         return parseObjectMapper(entity, TicketResponseDTO.class);
     }
+
+    public Page<TicketResponseDTO> findAll(Pageable pageable) {
+
+        return repository.findAll(pageable)
+                .map(TicketResponseDTO::new);
+    }
 }
+

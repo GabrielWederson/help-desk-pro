@@ -1,5 +1,6 @@
 package io.github.gabrielwederson.help_desk_pro.dto;
 
+import io.github.gabrielwederson.help_desk_pro.model.Ticket;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Priority;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Status;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Type;
@@ -26,6 +27,17 @@ public class TicketResponseDTO {
     private LocalDateTime completedAt;
 
     public TicketResponseDTO() {
+    }
+
+    public TicketResponseDTO(Ticket ticket){
+        this.name = ticket.getName();
+        this.description = ticket.getDescription();
+        this.type = ticket.getType();
+        this.priority = ticket.getPriority();
+        this.status = ticket.getStatus();
+        this.userID = ticket.getUserId();
+        this.createdAt = ticket.getCreatedAt();
+        this.completedAt = ticket.getCompletedAt();
     }
 
     public String getName() {
