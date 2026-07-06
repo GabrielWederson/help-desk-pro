@@ -51,7 +51,7 @@ public interface TicketControllerDocs {
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
             }
     )
-    TicketResponseDTO createScheduling(@RequestBody TicketRequestDTO dto);
+    TicketResponseDTO create(@RequestBody TicketRequestDTO dto);
 
     @Operation(summary = "Delete a Ticket",
             description = "Delete a Ticket by specific id",
@@ -66,7 +66,7 @@ public interface TicketControllerDocs {
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
             }
     )
-    ResponseEntity<?> deleteScheduling(@PathVariable("id") Long id);
+    ResponseEntity<?> delete(@PathVariable("id") Long id);
 
     @Operation(
             summary = "Find Ticket By Id",
