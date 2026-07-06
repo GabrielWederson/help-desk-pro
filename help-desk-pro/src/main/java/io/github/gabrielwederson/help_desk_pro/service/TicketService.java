@@ -3,11 +3,14 @@ package io.github.gabrielwederson.help_desk_pro.service;
 import io.github.gabrielwederson.help_desk_pro.dto.TicketRequestDTO;
 import io.github.gabrielwederson.help_desk_pro.dto.TicketResponseDTO;
 import io.github.gabrielwederson.help_desk_pro.model.Ticket;
+import io.github.gabrielwederson.help_desk_pro.model.enums.Priority;
+import io.github.gabrielwederson.help_desk_pro.model.enums.Type;
 import io.github.gabrielwederson.help_desk_pro.repository.TicketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -67,6 +70,45 @@ public class TicketService {
 
         return repository.findAll(pageable)
                 .map(TicketResponseDTO::new);
+    }
+
+    public Page<TicketResponseDTO> findByPriority(Priority priority, Pageable pageable) {
+        return repository.findByPriority(priority, pageable)
+                .map(TicketResponseDTO::new);
+    }
+
+    public Page<TicketResponseDTO> findByType (Type type, Pageable pageable){
+        return repository.findByType(type, pageable)
+                .map(TicketResponseDTO::new);
+    }
+
+    public Page<TicketResponseDTO> findAllOrderByPriority (Pageable pageable){
+        return repository.findAllOrderByPriority(pageable)
+                .map(TicketResponseDTO::new);
+    }
+
+    @Transactional
+    public TicketResponseDTO markAsInProgress(Long id){
+
+        repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException()); //change this exception after
+        repository.markAsInProgress(id);
+
+        var entity = repository.findById(id).get();
+        var dto = parseObjectMapper(entity, TicketResponseDTO.class);
+        return dto;
+    }
+
+    @Transactional
+    public TicketResponseDTO markAsInComplete(Long id){
+
+        repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException()); //change this exception after
+        repository.markAsInComplete(id);
+
+        var entity = repository.findById(id).get();
+        var dto = parseObjectMapper(entity, TicketResponseDTO.class);
+        return dto;
     }
 }
 

@@ -3,6 +3,8 @@ package io.github.gabrielwederson.help_desk_pro.repository;
 import io.github.gabrielwederson.help_desk_pro.model.Ticket;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Priority;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Type;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,10 +19,10 @@ import java.util.Optional;
 public interface TicketRepository extends JpaRepository<Ticket,Long> {
 
     @Query("SELECT t FROM Ticket t WHERE t.priority = :priority")
-    Optional<Ticket> findByPriority(@Param("priority")Priority priority);
+    Page<Ticket> findByPriority(@Param("priority") Priority priority, Pageable pageable);
 
     @Query("SELECT t FROM Ticket t WHERE t.type = :type")
-    Optional<Ticket> findByType(@Param("type") Type type);
+    Page<Ticket> findByType(@Param("type") Type type, Pageable pageable);
 
     @Query("""
     SELECT t
@@ -32,7 +34,7 @@ public interface TicketRepository extends JpaRepository<Ticket,Long> {
             WHEN io.github.gabrielwederson.help_desk_pro.model.enums.Priority.LOW THEN 3
         END
     """)
-    List<Ticket> findAllOrderByPriority();
+    Page<Ticket> findAllOrderByPriority(Pageable pageable);
 
     @Modifying
     @Transactional
