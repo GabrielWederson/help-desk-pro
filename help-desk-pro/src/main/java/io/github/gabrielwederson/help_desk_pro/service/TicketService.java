@@ -4,6 +4,7 @@ import io.github.gabrielwederson.help_desk_pro.dto.TicketRequestDTO;
 import io.github.gabrielwederson.help_desk_pro.dto.TicketResponseDTO;
 import io.github.gabrielwederson.help_desk_pro.model.Ticket;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Priority;
+import io.github.gabrielwederson.help_desk_pro.model.enums.Status;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Type;
 import io.github.gabrielwederson.help_desk_pro.repository.TicketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,25 +91,39 @@ public class TicketService {
     @Transactional
     public TicketResponseDTO markAsInProgress(Long id){
 
-        repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException()); //change this exception after
+        Ticket entity = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException());
+
+        if (entity.getStatus() != Status.CREATED) {
+            throw new IllegalStateException(
+                    "Only tickets with CREATED status can be marked as IN_PROGRESS."); //change this exception after
+        }
+
         repository.markAsInProgress(id);
 
-        var entity = repository.findById(id).get();
-        var dto = parseObjectMapper(entity, TicketResponseDTO.class);
-        return dto;
+        entity = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException());
+
+        return parseObjectMapper(entity, TicketResponseDTO.class);
     }
 
     @Transactional
     public TicketResponseDTO markAsInComplete(Long id){
 
-        repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException()); //change this exception after
+        Ticket entity = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException());
+
+        if (entity.getStatus() != Status.IN_PROGRESS) {
+            throw new IllegalStateException(
+                    "Only tickets with CREATED status can be marked as IN_PROGRESS."); //change this exception after
+        }
+
         repository.markAsInComplete(id);
 
-        var entity = repository.findById(id).get();
-        var dto = parseObjectMapper(entity, TicketResponseDTO.class);
-        return dto;
+        entity = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException());
+
+        return parseObjectMapper(entity, TicketResponseDTO.class);
     }
 }
 
