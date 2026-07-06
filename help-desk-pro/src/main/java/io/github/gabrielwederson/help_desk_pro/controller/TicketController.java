@@ -18,8 +18,13 @@ public class TicketController {
     @Autowired
     private TicketService service;
 
+    @GetMapping
+    public Page<TicketResponseDTO> findAll(Pageable pageable){
+        return service.findAll(pageable);
+    }
+
     @PostMapping
-    public TicketResponseDTO create(TicketRequestDTO dto){
+    public TicketResponseDTO create(@RequestBody TicketRequestDTO dto){
         return service.create(dto);
     }
 
@@ -37,11 +42,6 @@ public class TicketController {
     @PutMapping
     public TicketResponseDTO updateTicket(@RequestBody TicketRequestDTO dto){
         return service.updateTicket(dto);
-    }
-
-    @GetMapping
-    public Page<TicketResponseDTO> findAll(Pageable pageable){
-      return service.findAll(pageable);
     }
 
     @GetMapping(value = "/{priority}")
