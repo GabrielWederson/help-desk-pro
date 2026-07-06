@@ -38,4 +38,9 @@ public interface TicketRepository extends JpaRepository<Ticket,Long> {
     @Transactional
     @Query("UPDATE Ticket t SET t.status = io.github.gabrielwederson.help_desk_pro.model.enums.Status.IN_PROGRESS WHERE t.id =:id")
     void markAsInProgress(@Param("id") Long id);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Ticket t SET t.status = io.github.gabrielwederson.help_desk_pro.model.enums.Status.COMPLETE WHERE t.id =:id")
+    void markAsInComplete(@Param("id") Long id);
 }
