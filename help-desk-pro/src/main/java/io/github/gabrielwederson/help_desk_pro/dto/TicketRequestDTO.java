@@ -19,8 +19,6 @@ public class TicketRequestDTO {
 
     private Priority priority;
 
-    private Status status;
-
     public TicketRequestDTO() {
     }
 
@@ -64,23 +62,15 @@ public class TicketRequestDTO {
         this.priority = priority;
     }
 
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         TicketRequestDTO that = (TicketRequestDTO) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(description, that.description) && type == that.type && priority == that.priority && status == that.status;
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(description, that.description) && type == that.type && priority == that.priority;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, type, priority, status);
+        return Objects.hash(id, name, description, type, priority);
     }
 }

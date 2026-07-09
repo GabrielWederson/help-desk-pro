@@ -19,7 +19,7 @@ public class Ticket implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 130)
+    @Column(length = 130, nullable = false)
     private String name;
 
     private String description;

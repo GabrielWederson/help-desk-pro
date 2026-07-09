@@ -29,6 +29,7 @@ public class TicketService {
 
         var entity = parseObjectMapper(dto, Ticket.class);
         entity.setCreatedAt(LocalDateTime.now());
+        entity.setStatus(Status.CREATED);
 
         var response = parseObjectMapper(entity, TicketResponseDTO.class);
 
@@ -49,18 +50,16 @@ public class TicketService {
                 .orElseThrow(() -> new IllegalArgumentException()); //change this exception after
 
         return parseObjectMapper(entity, TicketResponseDTO.class);
-
     }
 
     public TicketResponseDTO updateTicket (TicketRequestDTO dto){
         Ticket entity = repository.findById(dto.getId())
                 .orElseThrow(() -> new IllegalArgumentException()); //change this exception after
 
-        entity.setDescription(dto.getDescription());
         entity.setName(dto.getName());
+        entity.setDescription(dto.getDescription());
         entity.setPriority(dto.getPriority());
         entity.setType(dto.getType());
-        entity.setStatus(dto.getStatus());
 
         repository.save(entity);
 
@@ -68,7 +67,6 @@ public class TicketService {
     }
 
     public Page<TicketResponseDTO> findAll(Pageable pageable) {
-
         return repository.findAll(pageable)
                 .map(TicketResponseDTO::new);
     }
