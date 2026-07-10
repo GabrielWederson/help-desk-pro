@@ -113,7 +113,7 @@ public class TicketService {
 
         if (entity.getStatus() != Status.IN_PROGRESS) {
             throw new IllegalStateException(
-                    "Only tickets with CREATED status can be marked as IN_PROGRESS."); //change this exception after
+                    "Only tickets with IN_PROGRESS status can be marked as COMPLETE."); //change this exception after
         }
 
         repository.markAsInComplete(id);

@@ -94,6 +94,19 @@ class TicketServiceTest {
     }
 
     @Test
+    void deleteTicketFailedByIdNotFound(){
+        Long id = 11L;
+
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            ticketService.delete(id);
+        });
+
+        verify(repository, never()).delete(any(Ticket.class));
+    }
+
+    @Test
     void findByIdTicketSuccessfully() {
         Long id = 2L;
 
@@ -113,7 +126,18 @@ class TicketServiceTest {
     }
 
     @Test
-    void updateTicketTicketSuccessfully() {
+    void findByIdFailedByIdNotFound(){
+        Long id = 122L;
+
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            ticketService.findById(id);
+        });
+    }
+
+    @Test
+    void updateTicketSuccessfully() {
 
        when(repository.findById(1L))
                .thenReturn(Optional.of(ticket));
@@ -135,6 +159,20 @@ class TicketServiceTest {
 
         verify(repository).findById(1L);
         verify(repository).save(ticket);
+    }
+
+    @Test
+    void updateTicketFailedByIdNotFound(){
+        TicketRequestDTO request2 = new TicketRequestDTO();
+        request.setId(1L);
+
+        when(repository.findById(request2.getId()))
+                .thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> ticketService.updateTicket(request2));
+
+        verify(repository, never()).save(any(Ticket.class));
     }
 
     @Test
@@ -276,6 +314,42 @@ class TicketServiceTest {
     }
 
     @Test
+    void markAsInProgressFailedByIdNotFound(){
+        Long id = 999L;
+
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            ticketService.findById(id);
+        });
+
+        verify(repository, never()).markAsInProgress(id);
+    }
+
+    @Test
+    void markAsInProgressFailedByStatusIsNotCreated(){
+        Long id = 1L;
+
+        Ticket ticket = new Ticket();
+        ticket.setId(id);
+        ticket.setStatus(Status.IN_PROGRESS);
+
+        when(repository.findById(id)).thenReturn(Optional.of(ticket));
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> ticketService.markAsInProgress(id)
+        );
+
+        assertEquals(
+                "Only tickets with CREATED status can be marked as IN_PROGRESS.",
+                exception.getMessage()
+        );
+
+        verify(repository, never()).markAsInProgress(anyLong());
+    }
+
+    @Test
     void markAsInCompleteTicketSuccessfully() {
         Long id = 3L;
 
@@ -312,5 +386,41 @@ class TicketServiceTest {
 
         verify(repository, times(2)).findById(id);
         verify(repository).markAsInComplete(id);
+    }
+
+    @Test
+    void markAsInCompleteFailedByIdNotFound(){
+        Long id = 997L;
+
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            ticketService.findById(id);
+        });
+
+        verify(repository, never()).markAsInComplete(id);
+    }
+
+    @Test
+    void markAsInCompleteFailedByStatusIsNotInProgress(){
+        Long id = 1L;
+
+        Ticket ticket = new Ticket();
+        ticket.setId(id);
+        ticket.setStatus(Status.CREATED);
+
+        when(repository.findById(id)).thenReturn(Optional.of(ticket));
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> ticketService.markAsInComplete(id)
+        );
+
+        assertEquals(
+                "Only tickets with IN_PROGRESS status can be marked as COMPLETE.",
+                exception.getMessage()
+        );
+
+        verify(repository, never()).markAsInComplete(anyLong());
     }
 }
