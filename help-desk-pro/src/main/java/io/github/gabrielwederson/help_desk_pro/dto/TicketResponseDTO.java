@@ -5,10 +5,13 @@ import io.github.gabrielwederson.help_desk_pro.model.enums.Priority;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Status;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Type;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class TicketResponseDTO {
+public class TicketResponseDTO implements Serializable {
+
+    private static final Long serialVersionID = 1L;
 
     private String name;
 
@@ -20,7 +23,7 @@ public class TicketResponseDTO {
 
     private Status status;
 
-    private Long userID;
+    private String resolvedBy;
 
     private LocalDateTime createdAt;
 
@@ -35,7 +38,7 @@ public class TicketResponseDTO {
         this.type = ticket.getType();
         this.priority = ticket.getPriority();
         this.status = ticket.getStatus();
-        this.userID = ticket.getUserId();
+        this.resolvedBy = ticket.getResolvedBy();
         this.createdAt = ticket.getCreatedAt();
         this.completedAt = ticket.getCompletedAt();
     }
@@ -80,12 +83,12 @@ public class TicketResponseDTO {
         this.status = status;
     }
 
-    public Long getUserID() {
-        return userID;
+    public String getResolvedBy() {
+        return resolvedBy;
     }
 
-    public void setUserID(Long userID) {
-        this.userID = userID;
+    public void setResolvedBy(String resolvedBy) {
+        this.resolvedBy = resolvedBy;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -108,11 +111,11 @@ public class TicketResponseDTO {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         TicketResponseDTO that = (TicketResponseDTO) o;
-        return Objects.equals(name, that.name) && Objects.equals(description, that.description) && type == that.type && priority == that.priority && status == that.status && Objects.equals(userID, that.userID) && Objects.equals(createdAt, that.createdAt) && Objects.equals(completedAt, that.completedAt);
+        return Objects.equals(name, that.name) && Objects.equals(description, that.description) && type == that.type && priority == that.priority && status == that.status && Objects.equals(resolvedBy, that.resolvedBy) && Objects.equals(createdAt, that.createdAt) && Objects.equals(completedAt, that.completedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, type, priority, status, userID, createdAt, completedAt);
+        return Objects.hash(name, description, type, priority, status, resolvedBy, createdAt, completedAt);
     }
 }
