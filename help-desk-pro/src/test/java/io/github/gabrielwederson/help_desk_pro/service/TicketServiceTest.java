@@ -1,19 +1,21 @@
 package io.github.gabrielwederson.help_desk_pro.service;
 
+import io.github.gabrielwederson.help_desk_pro.dto.MarkTicketDTO;
 import io.github.gabrielwederson.help_desk_pro.dto.TicketRequestDTO;
 import io.github.gabrielwederson.help_desk_pro.dto.TicketResponseDTO;
-import io.github.gabrielwederson.help_desk_pro.mapper.ObjectMapper;
+import io.github.gabrielwederson.help_desk_pro.exceptions.*;
 import io.github.gabrielwederson.help_desk_pro.model.Ticket;
+import io.github.gabrielwederson.help_desk_pro.model.User;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Priority;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Status;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Type;
 import io.github.gabrielwederson.help_desk_pro.repository.TicketRepository;
+import io.github.gabrielwederson.help_desk_pro.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import io.github.gabrielwederson.help_desk_pro.mapper.ObjectMapper.*;
 import org.springframework.data.domain.Page;
@@ -37,6 +39,9 @@ class TicketServiceTest {
 
     @Mock
     private TicketRepository repository;
+
+    @Mock
+    private UserRepository userRepository;
 
     private TicketRequestDTO request;
     private Ticket ticket;
@@ -99,7 +104,7 @@ class TicketServiceTest {
 
         when(repository.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(TicketNotFoundException.class, () -> {
             ticketService.delete(id);
         });
 
@@ -131,7 +136,7 @@ class TicketServiceTest {
 
         when(repository.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(TicketNotFoundException.class, () -> {
             ticketService.findById(id);
         });
     }
@@ -169,7 +174,7 @@ class TicketServiceTest {
         when(repository.findById(request2.getId()))
                 .thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(TicketNotFoundException.class,
                 () -> ticketService.updateTicket(request2));
 
         verify(repository, never()).save(any(Ticket.class));
@@ -296,7 +301,8 @@ class TicketServiceTest {
         when(repository.findById(id))
                 .thenReturn(Optional.of(ticketCreated));
 
-        doNothing().when(repository).markAsInProgress(id);
+        when(repository.save(any(Ticket.class)))
+                .thenReturn(ticketCreated);
 
         when(repository.findById(id))
                 .thenReturn(Optional.of(ticketCreated))
@@ -310,7 +316,7 @@ class TicketServiceTest {
         assertEquals(ticketCreated.getDescription(), dto.getDescription());
 
         verify(repository, times(2)).findById(id);
-        verify(repository).markAsInProgress(id);
+        verify(repository).save(ticketCreated);
     }
 
     @Test
@@ -319,7 +325,7 @@ class TicketServiceTest {
 
         when(repository.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(TicketNotFoundException.class, () -> {
             ticketService.findById(id);
         });
 
@@ -328,7 +334,7 @@ class TicketServiceTest {
 
     @Test
     void markAsInProgressFailedByStatusIsNotCreated(){
-        Long id = 1L;
+        Long id = 1333L;
 
         Ticket ticket = new Ticket();
         ticket.setId(id);
@@ -336,8 +342,8 @@ class TicketServiceTest {
 
         when(repository.findById(id)).thenReturn(Optional.of(ticket));
 
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        WrongStatusException exception = assertThrows(
+                WrongStatusException.class,
                 () -> ticketService.markAsInProgress(id)
         );
 
@@ -351,7 +357,12 @@ class TicketServiceTest {
 
     @Test
     void markAsInCompleteTicketSuccessfully() {
+
         Long id = 3L;
+
+        MarkTicketDTO request = new MarkTicketDTO();
+        request.setId(id);
+        request.setEmail("gabriel@email.com");
 
         Ticket ticketInProgress = new Ticket();
         ticketInProgress.setId(id);
@@ -365,19 +376,24 @@ class TicketServiceTest {
         ticketComplete.setName("Pc Problem");
         ticketComplete.setDescription("PC won't turn on");
         ticketComplete.setStatus(Status.COMPLETE);
-        ticketComplete.setPriority(Priority.HIGH);
+        ticketComplete.setPriority(Priority.COMPLETE);
         ticketComplete.setCreatedAt(LocalDateTime.now());
 
-        when(repository.findById(id))
-                .thenReturn(Optional.of(ticketInProgress));
-
-        doNothing().when(repository).markAsInComplete(id);
+        User user = new User();
+        user.setId(1L);
+        user.setName("Gabriel");
 
         when(repository.findById(id))
                 .thenReturn(Optional.of(ticketInProgress))
                 .thenReturn(Optional.of(ticketComplete));
 
-        TicketResponseDTO dto = ticketService.markAsInComplete(id);
+        when(userRepository.findNameByEmail(request.getEmail()))
+                .thenReturn(Optional.of(user));
+
+        when(repository.save(any(Ticket.class)))
+                .thenReturn(ticketInProgress);
+
+        TicketResponseDTO dto = ticketService.markAsInComplete(request);
 
         assertNotNull(dto);
         assertEquals(Status.COMPLETE, dto.getStatus());
@@ -385,25 +401,39 @@ class TicketServiceTest {
         assertEquals(ticketInProgress.getDescription(), dto.getDescription());
 
         verify(repository, times(2)).findById(id);
-        verify(repository).markAsInComplete(id);
+        verify(userRepository).findNameByEmail(request.getEmail());
+        verify(repository).save(ticketInProgress);
     }
 
     @Test
-    void markAsInCompleteFailedByIdNotFound(){
+    void markAsInCompleteFailedByIdNotFound() {
+
         Long id = 997L;
+
+        MarkTicketDTO request = new MarkTicketDTO();
+        request.setId(id);
+        request.setEmail("gabriel@email.com");
 
         when(repository.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            ticketService.findById(id);
-        });
+        assertThrows(
+                TicketNotFoundException.class,
+                () -> ticketService.markAsInComplete(request)
+        );
 
-        verify(repository, never()).markAsInComplete(id);
+        verify(repository).findById(id);
+        verify(userRepository, never()).findNameByEmail(anyString());
+        verify(repository, never()).save(any());
     }
 
     @Test
-    void markAsInCompleteFailedByStatusIsNotInProgress(){
-        Long id = 1L;
+    void markAsInCompleteFailedByStatusIsNotInProgress() {
+
+        Long id = 1222L;
+
+        MarkTicketDTO request = new MarkTicketDTO();
+        request.setId(id);
+        request.setEmail("gabriel@email.com");
 
         Ticket ticket = new Ticket();
         ticket.setId(id);
@@ -411,9 +441,9 @@ class TicketServiceTest {
 
         when(repository.findById(id)).thenReturn(Optional.of(ticket));
 
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
-                () -> ticketService.markAsInComplete(id)
+        WrongStatusException exception = assertThrows(
+                WrongStatusException.class,
+                () -> ticketService.markAsInComplete(request)
         );
 
         assertEquals(
@@ -421,6 +451,33 @@ class TicketServiceTest {
                 exception.getMessage()
         );
 
-        verify(repository, never()).markAsInComplete(anyLong());
+        verify(repository).findById(id);
+        verify(userRepository, never()).findNameByEmail(anyString());
+        verify(repository, never()).save(any());
     }
+
+    @Test
+    void findAllTicketsComplete(){
+        Pageable pageable = PageRequest.of(0, 10);
+
+        ticket.setStatus(Status.COMPLETE);
+
+        Page<Ticket> page = new PageImpl<>(List.of(ticket));
+
+        when(repository.findAllTicketsComplete(pageable))
+                .thenReturn(page);
+
+        Page<TicketResponseDTO> response = ticketService.findAllTicketsComplete(pageable);
+
+        assertNotNull(response);
+        assertEquals(1, response.getTotalElements());
+
+        TicketResponseDTO dto = response.getContent().get(0);
+
+        assertEquals(ticket.getName(), dto.getName());
+        assertEquals(Status.COMPLETE, dto.getStatus());
+
+        verify(repository).findAllTicketsComplete(pageable);
+    }
+
 }
