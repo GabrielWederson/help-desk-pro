@@ -1,5 +1,6 @@
 package io.github.gabrielwederson.help_desk_pro.controller.docs;
 
+import io.github.gabrielwederson.help_desk_pro.dto.MarkTicketDTO;
 import io.github.gabrielwederson.help_desk_pro.dto.TicketRequestDTO;
 import io.github.gabrielwederson.help_desk_pro.dto.TicketResponseDTO;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Priority;
@@ -168,8 +169,28 @@ public interface TicketControllerDocs {
     )
     Page<TicketResponseDTO> findAllOrderByPriority(Pageable pageable);
 
+    @Operation(
+            summary = "Find All Tickets Complete",
+            description = "Searches for all tickets complete with pagination",
+            tags = {"Tickets"},
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            responseCode = "200",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = TicketResponseDTO.class)
+                            )
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+            }
+    )
+    Page<TicketResponseDTO> findAllTicketsComplete(Pageable pageable);
+
     @Operation(summary = "Move Ticket for in progress",
-            description = "Update a Ticket using patch verb by passing a id of the Ticket",
+            description = "Update a Ticket using patch verb by passing a id and the email of the person who resolved the ticket",
             tags = {"Tickets"},
             responses = {
                     @ApiResponse(
@@ -184,9 +205,9 @@ public interface TicketControllerDocs {
             }
     )
 
-    TicketResponseDTO markAsInComplete(@PathVariable("id") Long id);
+    TicketResponseDTO markAsInComplete(@RequestBody MarkTicketDTO request);
     @Operation(summary = "Move Ticket for complete",
-            description = "Update a Ticket using patch verb by passing a id of the Ticket",
+            description = "Update a Ticket using patch verb by passing a id of ticket",
             tags = {"Tickets"},
             responses = {
                     @ApiResponse(
