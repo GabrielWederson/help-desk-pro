@@ -1,3 +1,41 @@
 spring:
-  application:
-    name: notification
+  rabbitmq:
+    host: ${RABBIT_HOST}
+    port: ${RABBIT_PORT}
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASS}
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 5
+        concurrency: 3
+        max-concurrency: 10
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USER}
+    password: ${MAIL_PASS}
+    default-encoding: UTF-8
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+        debug: false
+    task:
+      execution:
+        pool:
+          core-size: 5
+          max-size: 10
+          queue-capacity: 100
+        thread-name-prefix: async-email-
+rabbit:
+  queue:
+    ticket:
+      complete: ticket-complete.ms-notification
