@@ -27,6 +27,7 @@ public interface TicketRepository extends JpaRepository<Ticket,Long> {
     @Query("""
     SELECT t
     FROM Ticket t
+    WHERE t.status != io.github.gabrielwederson.help_desk_pro.model.enums.Status.COMPLETE
     ORDER BY
         CASE t.priority
             WHEN io.github.gabrielwederson.help_desk_pro.model.enums.Priority.HIGH THEN 1
@@ -36,10 +37,18 @@ public interface TicketRepository extends JpaRepository<Ticket,Long> {
     """)
     Page<Ticket> findAllOrderByPriority(Pageable pageable);
 
+    @Query("SELECT t FROM Ticket t WHERE t.status = io.github.gabrielwederson.help_desk_pro.model.enums.Status.COMPLETE")
+    Page<Ticket> findAllTicketsComplete(Pageable pageable);
+
     @Modifying
     @Transactional
     @Query("UPDATE Ticket t SET t.status = io.github.gabrielwederson.help_desk_pro.model.enums.Status.IN_PROGRESS WHERE t.id =:id")
     void markAsInProgress(@Param("id") Long id);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Ticket t SET t.priority = io.github.gabrielwederson.help_desk_pro.model.enums.Priority.COMPLETE WHERE t.id =:id")
+    void markPriorityAsComplete(@Param("id") Long id);
 
     @Modifying
     @Transactional
