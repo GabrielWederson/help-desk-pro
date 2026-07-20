@@ -1,13 +1,23 @@
 package io.github.gabrielwederson.help_desk_pro.service;
 
+import io.github.gabrielwederson.help_desk_pro.dto.MarkTicketDTO;
 import io.github.gabrielwederson.help_desk_pro.dto.TicketRequestDTO;
 import io.github.gabrielwederson.help_desk_pro.dto.TicketResponseDTO;
+import io.github.gabrielwederson.help_desk_pro.exceptions.TicketNotFoundException;
+import io.github.gabrielwederson.help_desk_pro.exceptions.UserNotFoundException;
+import io.github.gabrielwederson.help_desk_pro.exceptions.WrongStatusException;
 import io.github.gabrielwederson.help_desk_pro.model.Ticket;
+import io.github.gabrielwederson.help_desk_pro.model.User;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Priority;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Status;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Type;
 import io.github.gabrielwederson.help_desk_pro.repository.TicketRepository;
+import io.github.gabrielwederson.help_desk_pro.repository.UserRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,6 +27,7 @@ import java.time.LocalDateTime;
 
 import static io.github.gabrielwederson.help_desk_pro.mapper.ObjectMapper.parseObjectMapper;
 import static io.github.gabrielwederson.help_desk_pro.mapper.ObjectMapper.parseListObjectMapper;
+import static org.bouncycastle.util.Strings.toLowerCase;
 
 @Service
 public class TicketService {
@@ -24,6 +35,14 @@ public class TicketService {
     @Autowired
     private TicketRepository repository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    private RabbitTemplate rabbitTemplate;
+
+    public TicketService(RabbitTemplate rabbitTemplate) {
+        this.rabbitTemplate = rabbitTemplate;
+    }
 
     public TicketResponseDTO create(TicketRequestDTO dto){
 
@@ -38,23 +57,25 @@ public class TicketService {
         return response;
     }
 
+    @CacheEvict(value = "tickets", key = "#id")
     public void delete(Long id){
         Ticket entity = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException() ); //change this exception after
+                .orElseThrow(() -> new TicketNotFoundException("Ticket with this id, not found") );
 
         repository.delete(entity);
     }
 
+    @Cacheable(value = "tickets", key = "#id")
     public TicketResponseDTO findById(Long id){
         var entity = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException()); //change this exception after
+                .orElseThrow(() -> new TicketNotFoundException("Ticket with this id, not found"));
 
         return parseObjectMapper(entity, TicketResponseDTO.class);
     }
 
     public TicketResponseDTO updateTicket (TicketRequestDTO dto){
         Ticket entity = repository.findById(dto.getId())
-                .orElseThrow(() -> new IllegalArgumentException()); //change this exception after
+                .orElseThrow(() -> new TicketNotFoundException("Ticket with this id, not found"));
 
         entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
@@ -86,42 +107,71 @@ public class TicketService {
                 .map(TicketResponseDTO::new);
     }
 
+    public Page<TicketResponseDTO> findAllTicketsComplete(Pageable pageable){
+        return repository.findAllTicketsComplete(pageable)
+                .map(TicketResponseDTO::new);
+    }
+
+    @CachePut(value = "tickets", key = "#id")
     @Transactional
     public TicketResponseDTO markAsInProgress(Long id){
 
         Ticket entity = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException());
+                .orElseThrow(() -> new TicketNotFoundException("Ticket with this id, not found"));
 
         if (entity.getStatus() != Status.CREATED) {
-            throw new IllegalStateException(
-                    "Only tickets with CREATED status can be marked as IN_PROGRESS."); //change this exception after
+            throw new WrongStatusException(
+                    "Only tickets with CREATED status can be marked as IN_PROGRESS.");
         }
 
-        repository.markAsInProgress(id);
+        entity.setStatus(Status.IN_PROGRESS);
 
-        entity = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException());
+        repository.save(entity);
 
-        return parseObjectMapper(entity, TicketResponseDTO.class);
+        Ticket entity2 = repository.findById(id)
+                .orElseThrow(() -> new TicketNotFoundException(""));
+
+        return parseObjectMapper(entity2, TicketResponseDTO.class);
     }
 
+    @CachePut(value = "tickets", key = "#request.getId()")
     @Transactional
-    public TicketResponseDTO markAsInComplete(Long id){
+    public TicketResponseDTO markAsInComplete(MarkTicketDTO request){
 
-        Ticket entity = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException());
+        Ticket entity = repository.findById(request.getId())
+                .orElseThrow(() -> new TicketNotFoundException("Ticket with this id, not found"));
 
         if (entity.getStatus() != Status.IN_PROGRESS) {
-            throw new IllegalStateException(
-                    "Only tickets with IN_PROGRESS status can be marked as COMPLETE."); //change this exception after
+            throw new WrongStatusException(
+                    "Only tickets with IN_PROGRESS status can be marked as COMPLETE.");
         }
 
-        repository.markAsInComplete(id);
+        User user = userRepository.findNameByEmail(request.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("There are no users with that email"));
 
-        entity = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException());
+        entity.setPriority(Priority.COMPLETE);
+        entity.setStatus(Status.COMPLETE);
+        entity.setCompletedAt(LocalDateTime.now());
+        entity.setResolvedBy(user.getName());
+        entity.setUser(user);
 
-        return parseObjectMapper(entity, TicketResponseDTO.class);
+        repository.save(entity);
+
+        Ticket entity2 = repository.findById(request.getId())
+                .orElseThrow(() -> new TicketNotFoundException(""));
+
+        send(user.getEmail());
+
+        return parseObjectMapper(entity2, TicketResponseDTO.class);
+
+    }
+
+    private void send(String email) {
+        rabbitTemplate.convertAndSend(
+                "ticket-complete.ex",
+                "",
+                email
+        );
     }
 }
 
