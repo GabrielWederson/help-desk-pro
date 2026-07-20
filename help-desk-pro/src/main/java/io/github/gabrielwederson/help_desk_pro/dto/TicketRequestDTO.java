@@ -4,10 +4,13 @@ import io.github.gabrielwederson.help_desk_pro.model.enums.Priority;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Status;
 import io.github.gabrielwederson.help_desk_pro.model.enums.Type;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class TicketRequestDTO {
+public class TicketRequestDTO implements Serializable {
+
+    private static final Long serialVersionID = 1L;
 
     private Long id;
 
