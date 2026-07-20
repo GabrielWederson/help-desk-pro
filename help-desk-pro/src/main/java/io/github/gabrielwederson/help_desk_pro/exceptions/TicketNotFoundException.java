@@ -1,4 +1,13 @@
 package io.github.gabrielwederson.help_desk_pro.exceptions;
 
-public class TicketNotFoundException {
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class TicketNotFoundException extends RuntimeException{
+
+    public TicketNotFoundException(String message) {
+        super(message);
+    }
+
 }
