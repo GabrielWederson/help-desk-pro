@@ -32,15 +32,15 @@ import static org.bouncycastle.util.Strings.toLowerCase;
 @Service
 public class TicketService {
 
-    @Autowired
     private TicketRepository repository;
 
-    @Autowired
     private UserRepository userRepository;
 
     private RabbitTemplate rabbitTemplate;
 
-    public TicketService(RabbitTemplate rabbitTemplate) {
+    public TicketService(TicketRepository repository, UserRepository userRepository, RabbitTemplate rabbitTemplate) {
+        this.repository = repository;
+        this.userRepository = userRepository;
         this.rabbitTemplate = rabbitTemplate;
     }
 

@@ -17,8 +17,8 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "http://localhost:3000"
+                "http://localhost:5173", // Vite
+                "http://localhost:3000"  // React
         ));
 
         configuration.setAllowedMethods(List.of(
@@ -34,6 +34,7 @@ public class CorsConfig {
 
         configuration.setExposedHeaders(List.of("Authorization"));
 
+        // JWT via Authorization Header
         configuration.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source =
