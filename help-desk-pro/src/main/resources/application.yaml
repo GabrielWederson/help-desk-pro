@@ -5,7 +5,7 @@ spring:
   datasource:
     url: ${DB_URL}
     username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASS}
+    password: ${POSTGRES_PASSWORD}
 
   jpa:
     hibernate:
@@ -17,8 +17,8 @@ spring:
   rabbitmq:
     host: ${RABBIT_HOST}
     port: ${RABBIT_PORT}
-    username: ${RABBIT_USER}
-    password: ${RABBIT_PASS}
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
     listener:
       simple:
         acknowledge-mode: manual
@@ -33,7 +33,7 @@ rabbit:
 security:
   jwt:
     token:
-      secret-key: ${JWT_SECRET}
+      secret-key: ${JWT_SECRET_KEY}
       expire-length: ${JWT_EXPIRE_LENGTH}
 
 logging:

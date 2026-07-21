@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/ticket/v1")
+@RequestMapping("/api/ticket/v1")
 @Tag(name = "Tickets", description = "endpoints to management tickets")
 public class TicketController implements TicketControllerDocs{
 

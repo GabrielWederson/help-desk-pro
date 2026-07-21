@@ -72,25 +72,25 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "api/ticket/v1")
+                        .requestMatchers(HttpMethod.POST, "/api/ticket/v1")
                         .hasRole("USER")
 
-                        .requestMatchers(HttpMethod.GET, "api/ticket/v1")
+                        .requestMatchers(HttpMethod.GET, "/api/ticket/v1")
                         .hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.GET, "api/ticket/v1/**")
+                        .requestMatchers(HttpMethod.GET, "/api/ticket/v1/**")
                         .hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.DELETE, "api/ticket/v1")
+                        .requestMatchers(HttpMethod.DELETE, "/api/ticket/v1")
                         .hasAnyRole("USER", "ADMIN")
 
-                        .requestMatchers(HttpMethod.PATCH, "api/ticket/v1/**")
+                        .requestMatchers(HttpMethod.PATCH, "/api/ticket/v1/**")
                         .hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.PATCH, "api/ticket/v1")
+                        .requestMatchers(HttpMethod.PATCH, "/api/ticket/v1")
                         .hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.PUT, "api/ticket/v1")
+                        .requestMatchers(HttpMethod.PUT, "/api/ticket/v1")
                         .hasRole("USER")
 
                         .requestMatchers("/api/**").authenticated()

@@ -2,8 +2,8 @@ spring:
   rabbitmq:
     host: ${RABBIT_HOST}
     port: ${RABBIT_PORT}
-    username: ${RABBIT_USER}
-    password: ${RABBIT_PASS}
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
     listener:
       simple:
         acknowledge-mode: manual
