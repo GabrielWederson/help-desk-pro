@@ -18,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import io.github.gabrielwederson.help_desk_pro.mapper.ObjectMapper.*;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -42,6 +43,9 @@ class TicketServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private RabbitTemplate rabbitTemplate;
 
     private TicketRequestDTO request;
     private Ticket ticket;
@@ -377,11 +381,12 @@ class TicketServiceTest {
         ticketComplete.setDescription("PC won't turn on");
         ticketComplete.setStatus(Status.COMPLETE);
         ticketComplete.setPriority(Priority.COMPLETE);
-        ticketComplete.setCreatedAt(LocalDateTime.now());
+        ticketComplete.setCompletedAt(LocalDateTime.now());
 
         User user = new User();
         user.setId(1L);
         user.setName("Gabriel");
+        user.setEmail("gabriel@email.com");
 
         when(repository.findById(id))
                 .thenReturn(Optional.of(ticketInProgress))
@@ -391,18 +396,25 @@ class TicketServiceTest {
                 .thenReturn(Optional.of(user));
 
         when(repository.save(any(Ticket.class)))
-                .thenReturn(ticketInProgress);
+                .thenReturn(ticketComplete);
 
         TicketResponseDTO dto = ticketService.markAsInComplete(request);
 
         assertNotNull(dto);
         assertEquals(Status.COMPLETE, dto.getStatus());
-        assertEquals(ticketInProgress.getName(), dto.getName());
-        assertEquals(ticketInProgress.getDescription(), dto.getDescription());
+        assertEquals(Priority.COMPLETE, dto.getPriority());
+        assertEquals("Gabriel", ticketInProgress.getResolvedBy());
+        assertEquals(user, ticketInProgress.getUser());
 
         verify(repository, times(2)).findById(id);
         verify(userRepository).findNameByEmail(request.getEmail());
         verify(repository).save(ticketInProgress);
+
+        verify(rabbitTemplate).convertAndSend(
+                "ticket-complete.ex",
+                "",
+                "gabriel@email.com"
+        );
     }
 
     @Test
