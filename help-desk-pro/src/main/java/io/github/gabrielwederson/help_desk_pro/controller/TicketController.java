@@ -65,7 +65,7 @@ public class TicketController implements TicketControllerDocs{
         return service.findByType(type, pageable);
     }
 
-    @GetMapping("/orderByAllPrioryties")
+    @GetMapping("/orderByAllPriorities")
     @Override
     public Page<TicketResponseDTO> findAllOrderByPriority(Pageable pageable){
         return service.findAllOrderByPriority(pageable);

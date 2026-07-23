@@ -110,6 +110,18 @@ services:
       SPRING_MAIL_USERNAME: ${MAIL_USER}
       SPRING_MAIL_PASSWORD: ${MAIL_PASS}
 
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: ""
+    container_name: frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - help-desk-pro
+
 volumes:
   postgres_data:
   redis_data:
