@@ -26,10 +26,7 @@ const OpenTickets = () => {
     setLoading(true);
     try {
       const res = await ticketService.admin.getOrderedByPriority(pageNum);
-      console.log('=== RESPOSTA COMPLETA ===');
-      console.log('Headers:', res.headers);
-      console.log('Data:', res.data);
-      console.log('Primeiro ticket (string):', JSON.stringify(res.data.content?.[0], null, 2));
+
       const normalized = (res.data.content || []).map(ticket => {
         // Tenta encontrar o ID em vários campos possíveis
         const ticketId = ticket.id ?? ticket.ticketId ?? ticket.identifier ?? ticket._id ?? ticket.Id;

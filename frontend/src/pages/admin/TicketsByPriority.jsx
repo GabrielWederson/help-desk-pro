@@ -17,7 +17,7 @@ const TicketsByPriority = () => {
     setLoading(true);
     try {
       const res = await ticketService.admin.getByPriority(priority, pageNum);
-      console.log('Resposta getByPriority:', res.data); // temporário para depuração
+
       // Normaliza os tickets, aceitando content ou array direto
       const list = Array.isArray(res.data) ? res.data : (res.data.content || []);
       setTickets(list);
