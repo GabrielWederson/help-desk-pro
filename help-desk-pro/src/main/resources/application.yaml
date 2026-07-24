@@ -25,6 +25,7 @@ spring:
     port: ${RABBIT_PORT}
     username: ${RABBITMQ_USER}
     password: ${RABBITMQ_PASSWORD}
+    virtual-host: ${RABBITMQ_VHOST}
     listener:
       simple:
         acknowledge-mode: manual
