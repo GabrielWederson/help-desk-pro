@@ -18,7 +18,8 @@ public class CorsConfig {
 
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173", // Vite
-                "http://localhost:3000"  // React
+                "http://localhost:3000", // React
+                "https://help-desk-pro-orpin.vercel.app" //Vercel
         ));
 
         configuration.setAllowedMethods(List.of(
