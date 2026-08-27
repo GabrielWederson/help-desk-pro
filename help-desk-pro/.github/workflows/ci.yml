@@ -1,0 +1,101 @@
+
+  name: CI
+
+  on:
+    push:
+      branches:
+        - master
+        - develop
+
+    pull_request:
+      branches:
+        - master
+        - develop
+
+  permissions:
+    contents: read
+    pull-requests: write
+
+  concurrency:
+    group: ci-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+  jobs:
+
+    backend-tests:
+      name: Backend Tests
+      runs-on: ubuntu-latest
+
+      defaults:
+        run:
+          working-directory: help-desk-pro
+
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v5
+
+        - name: Set up Java 21
+          uses: actions/setup-java@v5
+          with:
+            distribution: temurin
+            java-version: '21'
+            cache: maven
+
+        - name: Verify Java version
+          run: java -version
+
+        - name: Give Maven Wrapper permission
+          run: chmod +x mvnw
+
+        - name: Run tests
+          run: ./mvnw --batch-mode test
+
+    notification-tests:
+      name: Notification Tests
+      runs-on: ubuntu-latest
+
+      defaults:
+        run:
+          working-directory: notification
+
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v5
+
+        - name: Set up Java 21
+          uses: actions/setup-java@v5
+          with:
+            distribution: temurin
+            java-version: '21'
+            cache: maven
+
+        - name: Verify Java version
+          run: java -version
+
+        - name: Give Maven Wrapper permission
+          run: chmod +x mvnw
+
+        - name: Run tests
+          run: ./mvnw --batch-mode test
+
+    result:
+      name: CI Result
+      runs-on: ubuntu-latest
+      needs:
+        - backend-tests
+        - notification-tests
+      if: always()
+
+      steps:
+        - name: Report success
+          if: needs.backend-tests.result == 'success' && needs.notification-tests.result == 'success'
+          run: |
+            echo "✅ CI PASSED"
+            echo "Todos os testes passaram com sucesso."
+
+        - name: Report failure
+          if: needs.backend-tests.result != 'success' || needs.notification-tests.result != 'success'
+          run: |
+            echo "❌ CI FAILED"
+            echo "Um ou mais conjuntos de testes falharam."
+            exit 1
