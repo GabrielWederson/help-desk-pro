@@ -7,3 +7,10 @@
         - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
         - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
         - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+  security:
+    jwt:
+      token:
+        secret-key: test-secret-key-for-ci-only
+        expire-length: 3600000
+
